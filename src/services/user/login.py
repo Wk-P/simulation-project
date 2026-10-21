@@ -1,5 +1,5 @@
 from string import ascii_letters, digits
-from .password import password_hash
+from .password import password_verify
 from src.models.user import UserModel
 from src.repositories.user import UserRepository, UsernameAlreadyExistsError
 from src.schemas.user.login import LoginStaffUserResponse, LoginStaffUserRequest, LoginNormalUserResponse, LoginNormalUserRequest, LoginAdminUserResponse, LoginAdminUserRequest
@@ -9,7 +9,7 @@ def login(username: str, password: str, repo: UserRepository) -> UserModel | Non
     user = repo.get_user_by_username(username)
     if not user:
         return None
-    if not password_hash.verify(password, user.password_hash):
+    if not password_verify(password, user.password_hash):
         return None
     return user
 

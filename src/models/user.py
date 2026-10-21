@@ -10,19 +10,6 @@ class UserModel:
 
         self.active = True
 
-    def hash_password(self, password: str) -> str:
-        # Implementation for hashing password
-        # hash password
-
-        hashedPassword = None
-        return hashedPassword
-
-    def check_username_repeat(self, username: str) -> bool:
-        # Implementation for checking username repetition
-        # Check if username already exists
-
-        return False
-
 
 
 def create_user(username: str, password: str, email: str = None, admin: bool = False, staff: bool = False):
@@ -37,6 +24,8 @@ class UserDB:
         # 成功返回 True
         # 失败返回 False，附带原因
         pass
-    def check_username(self, username):
+    def check_username_repeat(self, username: str) -> bool:
+        # Implementation for checking username repetition
+        # Check if username already exists
         pass
 userDB = UserDB()

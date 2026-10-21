@@ -1,6 +1,5 @@
-from src.models.user import UserModel
+from src.models.user import UserModel, userDB
 from pydantic import BaseModel
-from src.models.user import userDB
 from string import ascii_letters, digits
 
 # 输入表单
@@ -103,6 +102,11 @@ def validation(user: NormalUserRequest | StaffUserRequest | AdminUserRequest) ->
     return True
 
 
+def password_hasher(password: str) -> str:
+    # Implementation for hashing password
+    # hash password
+    return 
+
 """
 普通用户
 """
@@ -110,7 +114,7 @@ def user_register_svc(user: NormalUserRequest) -> NormalUserResponse:
     if not validation(user):
         return NormalUserResponse(username=user.username, user_id=None, email=None, message="Invalid user input")
     # 继续注册逻辑
-    if userDB.check_username(user.username):
+    if userDB.check_username_repeat(user.username):
         return NormalUserResponse(username=user.username, user_id=None, email=None, message="Username already exists")
 
     # 生成返回数据
@@ -129,7 +133,7 @@ def staff_register_svc(staff: StaffUserRequest) -> StaffUserResponse:
     if not validation(staff):
         return StaffUserResponse(username=staff.username, user_id=None, email=None, message="Invalid staff input")
     # 继续注册逻辑
-    if userDB.check_username(staff.username):
+    if userDB.check_username_repeat(staff.username):
         return StaffUserResponse(username=staff.username, user_id=None, email=None, message="Username already exists")
 
     # 生成返回数据
@@ -148,7 +152,7 @@ def admin_register_svc(admin: AdminUserRequest) -> AdminUserResponse:
     if not validation(admin):
         return AdminUserResponse(username=admin.username, user_id=None, email=None, message="Invalid admin input")
     # 继续注册逻辑
-    if userDB.check_username(admin.username):
+    if userDB.check_username_repeat(admin.username):
         return AdminUserResponse(username=admin.username, user_id=None, email=None, message="Username already exists")
 
     # 生成返回数据

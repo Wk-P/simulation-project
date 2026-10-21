@@ -1,8 +1,8 @@
-from string import ascii_letters, digits
 from .password import password_verify
 from src.models.user import UserModel
-from src.repositories.user import UserRepository, UsernameAlreadyExistsError
-from src.schemas.user.login import LoginStaffUserResponse, LoginStaffUserRequest, LoginNormalUserResponse, LoginNormalUserRequest, LoginAdminUserResponse, LoginAdminUserRequest
+from src.repositories.user import UserRepository
+from src.schemas.user.login import LoginUserResponse, LoginUserRequest
+from .jwt import generate_token
 
 # 验证账户密码
 def login(username: str, password: str, repo: UserRepository) -> UserModel | None:
@@ -13,38 +13,19 @@ def login(username: str, password: str, repo: UserRepository) -> UserModel | Non
         return None
     return user
 
-# 普通用户
-def user_login_svc(user: LoginNormalUserRequest, repo: UserRepository) -> LoginNormalUserResponse:
+# 用户登录服务
+def user_login_svc(user: LoginUserRequest, repo: UserRepository) -> LoginUserResponse:
     logged_in_user = login(user.username, user.password, repo)
     if not logged_in_user:
         raise ValueError("Invalid username or password")
-    return LoginNormalUserResponse(
-        username=logged_in_user.username,
-        user_id=logged_in_user.id,
-        email=logged_in_user.email,
-        message="Login successful"
-    )
 
-# 员工用户
-def staff_login_svc(user: LoginStaffUserRequest, repo: UserRepository) -> LoginStaffUserResponse:
-    logged_in_user = login(user.username, user.password, repo)
-    if not logged_in_user:
-        raise ValueError("Invalid username or password")
-    return LoginStaffUserResponse(
-        username=logged_in_user.username,
-        user_id=logged_in_user.id,
-        email=logged_in_user.email,
-        message="Login successful"
-    )
+    # 下发token
+    tokens = generate_token(logged_in_user)
 
-# 管理员用户
-def admin_login_svc(user: LoginAdminUserRequest, repo: UserRepository) -> LoginAdminUserResponse:
-    logged_in_user = login(user.username, user.password, repo)
-    if not logged_in_user:
-        raise ValueError("Invalid username or password")
-    return LoginAdminUserResponse(
+    return LoginUserResponse(
         username=logged_in_user.username,
-        user_id=logged_in_user.id,
+        user_id=str(logged_in_user.id),
         email=logged_in_user.email,
-        message="Login successful"
+        message="Login successful",
+        tokens=tokens,
     )

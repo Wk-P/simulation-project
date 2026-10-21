@@ -1,12 +1,9 @@
 from string import ascii_letters, digits
 
-from pwdlib import PasswordHash
-from pwdlib.hashers.bcrypt import BcryptHasher
-
 from src.models.user import UserModel
 from src.repositories.user import UserRepository, UsernameAlreadyExistsError
 from src.schemas.user.register import RegisterNormalUserRequest, RegisterNormalUserResponse, RegisterStaffUserRequest, RegisterStaffUserResponse, RegisterAdminUserRequest, RegisterAdminUserResponse
-
+from .password import password_hasher
 
 '''
 后端再次验证输入
@@ -55,10 +52,7 @@ def validation(user: RegisterNormalUserRequest | RegisterStaffUserRequest | Regi
     return True
 
 
-password_hash = PasswordHash((BcryptHasher(),))
 
-def password_hasher(password: str) -> str:
-    return password_hash.hash(password)
 
 
 # 三种用户共用的注册流程，成功返回新用户，用户名重复返回 None

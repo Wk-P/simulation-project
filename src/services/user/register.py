@@ -1,58 +1,11 @@
-from src.models.user import UserModel, userDB
-from pydantic import BaseModel
 from string import ascii_letters, digits
 
-# 输入表单
-'''
-=======
-一般用户
-=======
-'''
-class NormalUserRequest(BaseModel):
-    username: str
-    password: str
-    email: str | None
+from pwdlib import PasswordHash
+from pwdlib.hashers.bcrypt import BcryptHasher
 
-
-class NormalUserResponse(BaseModel):
-    username: str
-    user_id: str | None
-    email: str | None
-    message: str
-
-'''
-=======
-员工用户
-=======
-'''
-class StaffUserRequest(BaseModel):
-    username: str
-    password: str
-    email: str | None
-
-class StaffUserResponse(BaseModel):
-    username: str
-    user_id: str | None
-    email: str | None
-    message: str
-
-
-'''
-=======
-管理员用户
-=======
-'''
-class AdminUserRequest(BaseModel):
-    username: str
-    password: str
-    email: str | None
-
-
-class AdminUserResponse(BaseModel):
-    username: str
-    user_id: str | None
-    email: str | None
-    message: str
+from src.models.user import UserModel
+from src.repositories.user import UserRepository, UsernameAlreadyExistsError
+from src.schemas.user import NormalUserRequest, NormalUserResponse, StaffUserRequest, StaffUserResponse, AdminUserRequest, AdminUserResponse
 
 
 '''
@@ -102,65 +55,59 @@ def validation(user: NormalUserRequest | StaffUserRequest | AdminUserRequest) ->
     return True
 
 
+password_hash = PasswordHash((BcryptHasher(),))
+
 def password_hasher(password: str) -> str:
-    # Implementation for hashing password
-    # hash password
-    return 
+    return password_hash.hash(password)
+
+
+# 三种用户共用的注册流程，成功返回新用户，用户名重复返回 None
+def _create_user(repo: UserRepository, user: NormalUserRequest | StaffUserRequest | AdminUserRequest, admin: bool = False, staff: bool = False) -> UserModel | None:
+    if repo.exists_by_username(user.username):
+        return None
+    new_user = UserModel(
+        username=user.username,
+        password_hash=password_hasher(user.password),
+        email=user.email,
+        admin=admin,
+        staff=staff,
+    )
+    try:
+        return repo.create(new_user)
+    except UsernameAlreadyExistsError:
+        return None
 
 """
 普通用户
 """
-def user_register_svc(user: NormalUserRequest) -> NormalUserResponse:
+def user_register_svc(user: NormalUserRequest, repo: UserRepository) -> NormalUserResponse:
     if not validation(user):
         return NormalUserResponse(username=user.username, user_id=None, email=None, message="Invalid user input")
-    # 继续注册逻辑
-    if userDB.check_username_repeat(user.username):
+
+    created = _create_user(repo, user)
+    if created is None:
         return NormalUserResponse(username=user.username, user_id=None, email=None, message="Username already exists")
 
-    # 生成返回数据
-    responseUserInfo = NormalUserResponse(
-        username=user.username,
-        user_id="some_generated_id",  # Replace with actual ID generation logic
-        email=user.email,
-        message="User registered successfully"
-    )
-
-    return NormalUserResponse(username=user.username, user_id=responseUserInfo.user_id, email=user.email, message=responseUserInfo.message)
+    return NormalUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="User registered successfully")
 
 
-
-def staff_register_svc(staff: StaffUserRequest) -> StaffUserResponse:
+def staff_register_svc(staff: StaffUserRequest, repo: UserRepository) -> StaffUserResponse:
     if not validation(staff):
         return StaffUserResponse(username=staff.username, user_id=None, email=None, message="Invalid staff input")
-    # 继续注册逻辑
-    if userDB.check_username_repeat(staff.username):
+
+    created = _create_user(repo, staff, staff=True)
+    if created is None:
         return StaffUserResponse(username=staff.username, user_id=None, email=None, message="Username already exists")
 
-    # 生成返回数据
-    responseUserInfo = StaffUserResponse(
-        username=staff.username,
-        user_id="some_generated_id",  # Replace with actual ID generation logic
-        email=staff.email,
-        message="Staff registered successfully"
-    )
-
-    return StaffUserResponse(username=staff.username, user_id=responseUserInfo.user_id, email=staff.email, message=responseUserInfo.message)
+    return StaffUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="Staff registered successfully")
 
 
-
-def admin_register_svc(admin: AdminUserRequest) -> AdminUserResponse:
+def admin_register_svc(admin: AdminUserRequest, repo: UserRepository) -> AdminUserResponse:
     if not validation(admin):
         return AdminUserResponse(username=admin.username, user_id=None, email=None, message="Invalid admin input")
-    # 继续注册逻辑
-    if userDB.check_username_repeat(admin.username):
+
+    created = _create_user(repo, admin, admin=True)
+    if created is None:
         return AdminUserResponse(username=admin.username, user_id=None, email=None, message="Username already exists")
 
-    # 生成返回数据
-    responseUserInfo = AdminUserResponse(
-        username=admin.username,
-        user_id="some_generated_id",  # Replace with actual ID generation logic
-        email=admin.email,
-        message="Admin registered successfully"
-    )
-
-    return AdminUserResponse(username=admin.username, user_id=responseUserInfo.user_id, email=admin.email, message=responseUserInfo.message)
+    return AdminUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="Admin registered successfully")

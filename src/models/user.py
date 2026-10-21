@@ -1,31 +1,17 @@
-# import 
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 
-class UserModel:
-    def __init__(self, username: str, password: str, email: str = None, admin: bool = False, staff: bool = False):
-        self.username = username
-        self.email = email
-        self.password = password
-        self.admin = admin
-        self.staff = staff
-
-        self.active = True
+from src.db.base import Base
 
 
+# 用户表结构，只描述数据，不包含任何数据库操作
+class UserModel(Base):
+    __tablename__ = 'users'
 
-def create_user(username: str, password: str, email: str = None, admin: bool = False, staff: bool = False):
-    return UserModel(username=username, password=password, email=email, admin=admin, staff=staff)
-
-
-# 数据库操作
-class UserDB:
-    def __init__(self):
-        pass
-    def write_db(self, o: object):
-        # 成功返回 True
-        # 失败返回 False，附带原因
-        pass
-    def check_username_repeat(self, username: str) -> bool:
-        # Implementation for checking username repetition
-        # Check if username already exists
-        pass
-userDB = UserDB()
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    email: Mapped[str | None] = mapped_column(String(255), default=None)
+    admin: Mapped[bool] = mapped_column(default=False)
+    staff: Mapped[bool] = mapped_column(default=False)
+    active: Mapped[bool] = mapped_column(default=True)

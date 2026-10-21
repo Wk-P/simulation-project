@@ -13,9 +13,6 @@ class NormalUserRequest(BaseModel):
     username: str
     password: str
     email: str | None
-    admin: bool = False
-    staff: bool = False
-    active: bool = True
 
 
 class NormalUserResponse(BaseModel):
@@ -33,9 +30,6 @@ class StaffUserRequest(BaseModel):
     username: str
     password: str
     email: str | None
-    admin: bool = False
-    staff: bool = True
-    active: bool = True
 
 class StaffUserResponse(BaseModel):
     username: str
@@ -53,9 +47,6 @@ class AdminUserRequest(BaseModel):
     username: str
     password: str
     email: str | None
-    admin: bool = True
-    staff: bool = False
-    active: bool = True
 
 
 class AdminUserResponse(BaseModel):

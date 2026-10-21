@@ -8,3 +8,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+*.zip
+
+
+# macOS
+.DS_Store

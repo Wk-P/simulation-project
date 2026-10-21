@@ -13,16 +13,16 @@ def get_user_repo(db: Session = Depends(get_db)) -> UserRepository:
     return UserRepository(db)
 
 
-@router.post('/user/register/')
+@router.post('/user')
 def user_register(user: NormalUserRequest, repo: UserRepository = Depends(get_user_repo)) -> NormalUserResponse:
     return user_register_svc(user, repo)
 
 
-@router.post('/staff/register/')
+@router.post('/staff')
 def staff_register(user: StaffUserRequest, repo: UserRepository = Depends(get_user_repo)) -> StaffUserResponse:
     return staff_register_svc(user, repo)
 
 
-@router.post('/admin/register/')
+@router.post('/admin')
 def admin_register(user: AdminUserRequest, repo: UserRepository = Depends(get_user_repo)) -> AdminUserResponse:
     return admin_register_svc(user, repo)

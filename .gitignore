@@ -16,3 +16,6 @@ wheels/
 .DS_Store
 # SQLite 数据库文件
 *.db
+
+# vscode
+.vscode/

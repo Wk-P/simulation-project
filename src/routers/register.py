@@ -1,16 +1,10 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from src.db.session import get_db
-from src.repositories.user import UserRepository
+from src.repositories.user.user import UserRepository
+from src.routers.deps import get_user_repo
 from src.schemas.user.register import RegisterNormalUserResponse, RegisterNormalUserRequest, RegisterStaffUserRequest, RegisterStaffUserResponse, RegisterAdminUserRequest, RegisterAdminUserResponse
 from src.services.user.register import user_register_svc, staff_register_svc, admin_register_svc
 
 router = APIRouter(prefix="/register")
-
-
-def get_user_repo(db: Session = Depends(get_db)) -> UserRepository:
-    return UserRepository(db)
 
 
 @router.post('/user')

@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from src.models.user import UserModel
+from src.models.user.user import UserModel
 
 
 class UsernameAlreadyExistsError(Exception):
@@ -28,6 +28,9 @@ class UserRepository:
             raise UsernameAlreadyExistsError(user.username) from e
         self.db.refresh(user)
         return user
+
+    def get_user_by_id(self, user_id: int) -> UserModel | None:
+        return self.db.get(UserModel, user_id)
 
     def get_user_by_username(self, username: str) -> UserModel | None:
         stmt = select(UserModel).where(UserModel.username == username)

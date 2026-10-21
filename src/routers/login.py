@@ -1,18 +1,21 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, status
 
-
-from src.db.session import get_db
-from src.repositories.user import UserRepository
+from src.repositories.user.session import SessionRepository
+from src.repositories.user.user import UserRepository
+from src.routers.deps import get_session_repo, get_user_repo
 from src.schemas.user.login import LoginUserRequest, LoginUserResponse
-from src.services.user.login import user_login_svc
+from src.services.user.login import InvalidCredentialsError, user_login_svc
 
 router = APIRouter(prefix="/login")
 
-def get_user_repo(db: Session = Depends(get_db)) -> UserRepository:
-    return UserRepository(db)
-
 
 @router.post('/user')
-def user_login(user: LoginUserRequest, repo: UserRepository = Depends(get_user_repo)) -> LoginUserResponse:
-    return user_login_svc(user, repo)
+def user_login(
+    user: LoginUserRequest,
+    user_repo: UserRepository = Depends(get_user_repo),
+    session_repo: SessionRepository = Depends(get_session_repo),
+) -> LoginUserResponse:
+    try:
+        return user_login_svc(user, user_repo, session_repo)
+    except InvalidCredentialsError as e:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(e)) from e

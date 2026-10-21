@@ -5,8 +5,6 @@ from uuid import uuid4
 import jwt
 
 from src.core.config import settings
-from src.models.user import UserModel
-from src.schemas.user.jwt import AuthTokens
 
 TokenType = Literal['access', 'refresh']
 
@@ -18,26 +16,23 @@ Payload 字段
     type 区分 access / refresh，防止拿 refresh token 当 access token 用
     iat  签发时间
     exp  过期时间
-    jti  token 唯一 id，后续做注销 / 黑名单时使用
+    jti  token 唯一 id；refresh token 的 jti 就是会话 id，用来查 sessions 表
 '''
 
-def _encode_token(user: UserModel, token_type: TokenType, expires_delta: timedelta) -> str:
-    now = datetime.now(timezone.utc)
+def encode_token(user_id: int, token_type: TokenType, expires_at: datetime, jti: str | None = None) -> str:
     payload = {
-        'sub': str(user.id),
+        'sub': str(user_id),
         'type': token_type,
-        'iat': now,
-        'exp': now + expires_delta,
-        'jti': uuid4().hex,
+        'iat': datetime.now(timezone.utc),
+        'exp': expires_at,
+        'jti': jti or uuid4().hex,
     }
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
-def generate_token(user: UserModel) -> AuthTokens:
-    return AuthTokens(
-        access_token=_encode_token(user, 'access', timedelta(minutes=settings.access_token_expire_minutes)),
-        refresh_token=_encode_token(user, 'refresh', timedelta(days=settings.refresh_token_expire_days)),
-    )
+def encode_access_token(user_id: int) -> str:
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
+    return encode_token(user_id, 'access', expires_at)
 
 
 # 校验签名、过期时间和 token 类型，失败抛出 jwt.InvalidTokenError
@@ -46,7 +41,7 @@ def decode_token(token: str, expected_type: TokenType) -> dict:
         token,
         settings.jwt_secret_key,
         algorithms=[settings.jwt_algorithm],
-        options={'require': ['sub', 'type', 'exp']},
+        options={'require': ['sub', 'type', 'exp', 'jti']},
     )
     if payload['type'] != expected_type:
         raise jwt.InvalidTokenError(f'Expected {expected_type} token')

@@ -1,7 +1,7 @@
 from string import ascii_letters, digits
 
-from src.models.user import UserModel
-from src.repositories.user import UserRepository, UsernameAlreadyExistsError
+from src.models.user.user import UserModel
+from src.repositories.user.user import UserRepository, UsernameAlreadyExistsError
 from src.schemas.user.register import RegisterNormalUserRequest, RegisterNormalUserResponse, RegisterStaffUserRequest, RegisterStaffUserResponse, RegisterAdminUserRequest, RegisterAdminUserResponse
 from .password import password_hasher
 

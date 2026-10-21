@@ -35,3 +35,10 @@ Header.Payload.Signature
 - exp = 过期时间
 
 
+# session
+如果没有session，真正的jwt其实是做不出来的。因为单纯access_token很容易，两次HTTP就结束了。
+
+但是实际上服务器更需要的是session来让jwt真正变为随着用户端离线的状态型签名。
+
+## session 表的构建
+session并不能是简单的内存存储，必须持久化存储。

@@ -9,7 +9,6 @@ from pydantic import BaseModel
 class LoginNormalUserRequest(BaseModel):
     username: str
     password: str
-    email: str | None
 
 
 class LoginNormalUserResponse(BaseModel):
@@ -26,7 +25,6 @@ class LoginNormalUserResponse(BaseModel):
 class LoginStaffUserRequest(BaseModel):
     username: str
     password: str
-    email: str | None
 
 class LoginStaffUserResponse(BaseModel):
     username: str
@@ -43,7 +41,6 @@ class LoginStaffUserResponse(BaseModel):
 class LoginAdminUserRequest(BaseModel):
     username: str
     password: str
-    email: str | None
 
 
 class LoginAdminUserResponse(BaseModel):

@@ -6,7 +6,7 @@ from src.repositories.user import UserRepository
 from src.schemas.user import NormalUserResponse, NormalUserRequest, StaffUserRequest, StaffUserResponse, AdminUserRequest, AdminUserResponse
 from src.services.user.register import user_register_svc, staff_register_svc, admin_register_svc
 
-router = APIRouter()
+router = APIRouter(prefix="/register")
 
 
 def get_user_repo(db: Session = Depends(get_db)) -> UserRepository:

@@ -3,7 +3,7 @@ from string import ascii_letters, digits
 from pwdlib import PasswordHash
 from src.models.user import UserModel
 from src.repositories.user import UserRepository, UsernameAlreadyExistsError
-from src.schemas.user import NormalUserRequest, NormalUserResponse, StaffUserRequest, StaffUserResponse, AdminUserRequest, AdminUserResponse
+from src.schemas.user.register import RegisterNormalUserRequest, RegisterNormalUserResponse, RegisterStaffUserRequest, RegisterStaffUserResponse, RegisterAdminUserRequest, RegisterAdminUserResponse
 
 
 # 验证账户密码
@@ -16,11 +16,11 @@ def login(username: str, password: str, repo: UserRepository) -> UserModel | Non
     return user
 
 # 普通用户
-def user_login_svc(user: NormalUserRequest, repo: UserRepository) -> NormalUserResponse:
+def user_login_svc(user: RegisterNormalUserRequest, repo: UserRepository) -> RegisterNormalUserResponse:
     logged_in_user = login(user.username, user.password, repo)
     if not logged_in_user:
         raise ValueError("Invalid username or password")
-    return NormalUserResponse(
+    return RegisterNormalUserResponse(
         username=logged_in_user.username,
         user_id=logged_in_user.id,
         email=logged_in_user.email,
@@ -28,11 +28,11 @@ def user_login_svc(user: NormalUserRequest, repo: UserRepository) -> NormalUserR
     )
 
 # 员工用户
-def staff_login_svc(user: StaffUserRequest, repo: UserRepository) -> StaffUserResponse:
+def staff_login_svc(user: RegisterStaffUserRequest, repo: UserRepository) -> RegisterStaffUserResponse:
     logged_in_user = login(user.username, user.password, repo)
     if not logged_in_user:
         raise ValueError("Invalid username or password")
-    return StaffUserResponse(
+    return RegisterStaffUserResponse(
         username=logged_in_user.username,
         user_id=logged_in_user.id,
         email=logged_in_user.email,
@@ -40,11 +40,11 @@ def staff_login_svc(user: StaffUserRequest, repo: UserRepository) -> StaffUserRe
     )
 
 # 管理员用户
-def admin_login_svc(user: AdminUserRequest, repo: UserRepository) -> AdminUserResponse:
+def admin_login_svc(user: RegisterAdminUserRequest, repo: UserRepository) -> RegisterAdminUserResponse:
     logged_in_user = login(user.username, user.password, repo)
     if not logged_in_user:
         raise ValueError("Invalid username or password")
-    return AdminUserResponse(
+    return RegisterAdminUserResponse(
         username=logged_in_user.username,
         user_id=logged_in_user.id,
         email=logged_in_user.email,

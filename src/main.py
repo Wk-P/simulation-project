@@ -6,7 +6,7 @@ from src.db.base import Base
 from src.db.session import engine
 from src.models import user  # noqa: F401  注册表模型到 Base.metadata
 from src.routers.register import router as register_router
-
+from src.routers.login import router as login_router
 
 # 启动时建表（后续引入 Alembic 迁移后应移除）
 @asynccontextmanager
@@ -17,3 +17,4 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(register_router)
+app.include_router(login_router)

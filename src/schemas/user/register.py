@@ -6,13 +6,13 @@ from pydantic import BaseModel
 一般用户
 =======
 '''
-class NormalUserRequest(BaseModel):
+class RegisterNormalUserRequest(BaseModel):
     username: str
     password: str
     email: str | None
 
 
-class NormalUserResponse(BaseModel):
+class RegisterNormalUserResponse(BaseModel):
     username: str
     user_id: str | None
     email: str | None
@@ -23,12 +23,12 @@ class NormalUserResponse(BaseModel):
 员工用户
 =======
 '''
-class StaffUserRequest(BaseModel):
+class RegisterStaffUserRequest(BaseModel):
     username: str
     password: str
     email: str | None
 
-class StaffUserResponse(BaseModel):
+class RegisterStaffUserResponse(BaseModel):
     username: str
     user_id: str | None
     email: str | None
@@ -40,13 +40,13 @@ class StaffUserResponse(BaseModel):
 管理员用户
 =======
 '''
-class AdminUserRequest(BaseModel):
+class RegisterAdminUserRequest(BaseModel):
     username: str
     password: str
     email: str | None
 
 
-class AdminUserResponse(BaseModel):
+class RegisterAdminUserResponse(BaseModel):
     username: str
     user_id: str | None
     email: str | None

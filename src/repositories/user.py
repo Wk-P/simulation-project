@@ -28,3 +28,7 @@ class UserRepository:
             raise UsernameAlreadyExistsError(user.username) from e
         self.db.refresh(user)
         return user
+
+    def get_user_by_username(self, username: str) -> UserModel | None:
+        stmt = select(UserModel).where(UserModel.username == username)
+        return self.db.execute(stmt).scalars().first()

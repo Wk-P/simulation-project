@@ -77,9 +77,7 @@ def _create_user(repo: UserRepository, user: NormalUserRequest | StaffUserReques
     except UsernameAlreadyExistsError:
         return None
 
-"""
-普通用户
-"""
+# 普通用户
 def user_register_svc(user: NormalUserRequest, repo: UserRepository) -> NormalUserResponse:
     if not validation(user):
         return NormalUserResponse(username=user.username, user_id=None, email=None, message="Invalid user input")
@@ -90,7 +88,7 @@ def user_register_svc(user: NormalUserRequest, repo: UserRepository) -> NormalUs
 
     return NormalUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="User registered successfully")
 
-
+# 员工用户
 def staff_register_svc(staff: StaffUserRequest, repo: UserRepository) -> StaffUserResponse:
     if not validation(staff):
         return StaffUserResponse(username=staff.username, user_id=None, email=None, message="Invalid staff input")
@@ -102,6 +100,7 @@ def staff_register_svc(staff: StaffUserRequest, repo: UserRepository) -> StaffUs
     return StaffUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="Staff registered successfully")
 
 
+# 管理员用户
 def admin_register_svc(admin: AdminUserRequest, repo: UserRepository) -> AdminUserResponse:
     if not validation(admin):
         return AdminUserResponse(username=admin.username, user_id=None, email=None, message="Invalid admin input")

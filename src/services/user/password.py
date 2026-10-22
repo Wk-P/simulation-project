@@ -3,8 +3,8 @@ from pwdlib.hashers.bcrypt import BcryptHasher
 
 password_hash = PasswordHash((BcryptHasher(),))
 
-def password_hasher(password: str) -> str:
+def hash_password(password: str) -> str:
     return password_hash.hash(password)
 
-def password_verify(password: str, verified_hash: str) -> bool:
-    return password_hash.verify(password, verified_hash)
+def verify_password(password: str, password_hash_value: str) -> bool:
+    return password_hash.verify(password, password_hash_value)

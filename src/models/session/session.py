@@ -11,7 +11,7 @@
     access token 和这张表无关。
 
 谁会用它
-    只有 repositories/user/session.py 直接读写这张表。
+    只有 repositories/session/session.py 直接读写这张表。
 '''
 from datetime import datetime
 

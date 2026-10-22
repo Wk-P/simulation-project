@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-# JWT
+# Token
 
 class AuthTokens(BaseModel):
     access_token: str

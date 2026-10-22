@@ -3,7 +3,7 @@ from string import ascii_letters, digits
 from src.models.user.user import UserModel
 from src.repositories.user.user import UserRepository, UsernameAlreadyExistsError
 from src.schemas.user.register import RegisterNormalUserRequest, RegisterNormalUserResponse, RegisterStaffUserRequest, RegisterStaffUserResponse, RegisterAdminUserRequest, RegisterAdminUserResponse
-from .password import password_hasher
+from .password import hash_password
 
 '''
 后端再次验证输入
@@ -24,9 +24,9 @@ from .password import password_hasher
     只允许英文字符
 '''
 
-def validation(user: RegisterNormalUserRequest | RegisterStaffUserRequest | RegisterAdminUserRequest) -> bool:
-    username = user.username
-    password = user.password
+def validate_register_request(request: RegisterNormalUserRequest | RegisterStaffUserRequest | RegisterAdminUserRequest) -> bool:
+    username = request.username
+    password = request.password
 
     # 用户名仅允许英文字母、数字和下划线。
     if not 1 <= len(username) <= 20:
@@ -52,55 +52,64 @@ def validation(user: RegisterNormalUserRequest | RegisterStaffUserRequest | Regi
     return True
 
 
-
-
-
-# 三种用户共用的注册流程，成功返回新用户，用户名重复返回 None
-def _create_user(repo: UserRepository, user: RegisterNormalUserRequest | RegisterStaffUserRequest | RegisterAdminUserRequest, admin: bool = False, staff: bool = False) -> UserModel | None:
-    if repo.exists_by_username(user.username):
+# 三种用户共用的注册流程（用了三次，所以抽出来）：成功返回新用户，用户名重复返回 None
+def create_user_account(user_repo: UserRepository, request: RegisterNormalUserRequest | RegisterStaffUserRequest | RegisterAdminUserRequest, admin: bool = False, staff: bool = False) -> UserModel | None:
+    if user_repo.exists_by_username(request.username):
         return None
     new_user = UserModel(
-        username=user.username,
-        password_hash=password_hasher(user.password),
-        email=user.email,
+        username=request.username,
+        password_hash=hash_password(request.password),
+        email=request.email,
         admin=admin,
         staff=staff,
     )
     try:
-        return repo.create(new_user)
+        created_user = user_repo.create_user(new_user)
     except UsernameAlreadyExistsError:
         return None
+    return created_user
+
 
 # 普通用户
-def user_register_svc(user: RegisterNormalUserRequest, repo: UserRepository) -> RegisterNormalUserResponse:
-    if not validation(user):
-        return RegisterNormalUserResponse(username=user.username, user_id=None, email=None, message="Invalid user input")
+def register_user(request: RegisterNormalUserRequest, user_repo: UserRepository) -> RegisterNormalUserResponse:
+    if not validate_register_request(request):
+        response = RegisterNormalUserResponse(username=request.username, user_id=None, email=None, message="Invalid user input")
+        return response
 
-    created = _create_user(repo, user)
-    if created is None:
-        return RegisterNormalUserResponse(username=user.username, user_id=None, email=None, message="Username already exists")
+    created_user = create_user_account(user_repo, request)
+    if created_user is None:
+        response = RegisterNormalUserResponse(username=request.username, user_id=None, email=None, message="Username already exists")
+        return response
 
-    return RegisterNormalUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="User registered successfully")
+    response = RegisterNormalUserResponse(username=created_user.username, user_id=str(created_user.id), email=created_user.email, message="User registered successfully")
+    return response
+
 
 # 员工用户
-def staff_register_svc(staff: RegisterStaffUserRequest, repo: UserRepository) -> RegisterStaffUserResponse:
-    if not validation(staff):
-        return RegisterStaffUserResponse(username=staff.username, user_id=None, email=None, message="Invalid staff input")
+def register_staff(request: RegisterStaffUserRequest, user_repo: UserRepository) -> RegisterStaffUserResponse:
+    if not validate_register_request(request):
+        response = RegisterStaffUserResponse(username=request.username, user_id=None, email=None, message="Invalid staff input")
+        return response
 
-    created = _create_user(repo, staff, staff=True)
-    if created is None:
-        return RegisterStaffUserResponse(username=staff.username, user_id=None, email=None, message="Username already exists")
+    created_user = create_user_account(user_repo, request, staff=True)
+    if created_user is None:
+        response = RegisterStaffUserResponse(username=request.username, user_id=None, email=None, message="Username already exists")
+        return response
 
-    return RegisterStaffUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="Staff registered successfully")
+    response = RegisterStaffUserResponse(username=created_user.username, user_id=str(created_user.id), email=created_user.email, message="Staff registered successfully")
+    return response
 
 
 # 管理员用户
-def admin_register_svc(admin: RegisterAdminUserRequest, repo: UserRepository) -> RegisterAdminUserResponse:
-    if not validation(admin):
-        return RegisterAdminUserResponse(username=admin.username, user_id=None, email=None, message="Invalid admin input")
+def register_admin(request: RegisterAdminUserRequest, user_repo: UserRepository) -> RegisterAdminUserResponse:
+    if not validate_register_request(request):
+        response = RegisterAdminUserResponse(username=request.username, user_id=None, email=None, message="Invalid admin input")
+        return response
 
-    created = _create_user(repo, admin, admin=True)
-    if created is None:
-        return RegisterAdminUserResponse(username=admin.username, user_id=None, email=None, message="Username already exists")
+    created_user = create_user_account(user_repo, request, admin=True)
+    if created_user is None:
+        response = RegisterAdminUserResponse(username=request.username, user_id=None, email=None, message="Username already exists")
+        return response
 
-    return RegisterAdminUserResponse(username=created.username, user_id=str(created.id), email=created.email, message="Admin registered successfully")
+    response = RegisterAdminUserResponse(username=created_user.username, user_id=str(created_user.id), email=created_user.email, message="Admin registered successfully")
+    return response

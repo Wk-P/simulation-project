@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .jwt import AuthTokens
+from src.schemas.session.token import AuthTokens
 # 输入表单
 '''
 =======

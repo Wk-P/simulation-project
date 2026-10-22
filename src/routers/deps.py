@@ -19,9 +19,9 @@ from sqlalchemy.orm import Session
 
 from src.db.session import get_db
 from src.models.user.user import UserModel
-from src.repositories.user.session import SessionRepository
+from src.repositories.session.session import SessionRepository
 from src.repositories.user.user import UserRepository
-from src.services.user.me import NotAuthenticatedError, token_authenticate
+from src.services.auth.authenticate import NotAuthenticatedError, authenticate_access_token
 
 # 从请求头 Authorization: Bearer <token> 中取出 token
 # auto_error=False：没带请求头时返回 None，由下面统一返回 401
@@ -41,11 +41,12 @@ def get_session_repo(db: Session = Depends(get_db)) -> SessionRepository:
 # 提供当前登录用户：取出 token → 交给 service 鉴权 → 失败转成 HTTP 401
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-    repo: UserRepository = Depends(get_user_repo),
+    user_repo: UserRepository = Depends(get_user_repo),
 ) -> UserModel:
     if credentials is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, 'Not authenticated', headers={'WWW-Authenticate': 'Bearer'})
     try:
-        return token_authenticate(credentials.credentials, repo)
+        user = authenticate_access_token(credentials.credentials, user_repo)
     except NotAuthenticatedError as e:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(e), headers={'WWW-Authenticate': 'Bearer'}) from e
+    return user

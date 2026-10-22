@@ -18,7 +18,7 @@ class UserRepository:
         stmt = select(UserModel.id).where(UserModel.username == username)
         return self.db.scalar(stmt) is not None
 
-    def create(self, user: UserModel) -> UserModel:
+    def create_user(self, user: UserModel) -> UserModel:
         self.db.add(user)
         try:
             self.db.commit()

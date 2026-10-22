@@ -9,31 +9,32 @@
     /token/refresh 也返回 401 → 说明会话已失效 → 让用户重新登录
 
 职责
-    只处理 HTTP，规则在 services/user/session.py。
+    只处理 HTTP，规则在 services/session/session.py。
 '''
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.repositories.user.session import SessionRepository
+from src.repositories.session.session import SessionRepository
 from src.routers.deps import get_session_repo
-from src.schemas.user.jwt import AuthTokens, RefreshTokenRequest
-from src.services.user.session import InvalidSessionError, end_session, refresh_session
+from src.schemas.session.token import AuthTokens, RefreshTokenRequest
+from src.services.session.session import InvalidSessionError, end_session, refresh_session
 
 router = APIRouter(prefix="/token")
 
 
 # 刷新：用 refresh token 换一对新 token，旧 refresh token 同时作废
 @router.post('/refresh')
-def token_refresh(body: RefreshTokenRequest, repo: SessionRepository = Depends(get_session_repo)) -> AuthTokens:
+def post_token_refresh(request: RefreshTokenRequest, session_repo: SessionRepository = Depends(get_session_repo)) -> AuthTokens:
     try:
-        return refresh_session(body.refresh_token, repo)
+        tokens = refresh_session(request.refresh_token, session_repo)
     except InvalidSessionError as e:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(e)) from e
+    return tokens
 
 
 # 退出登录：作废当前会话
 @router.post('/logout', status_code=status.HTTP_204_NO_CONTENT)
-def token_logout(body: RefreshTokenRequest, repo: SessionRepository = Depends(get_session_repo)) -> None:
+def post_token_logout(request: RefreshTokenRequest, session_repo: SessionRepository = Depends(get_session_repo)) -> None:
     try:
-        end_session(body.refresh_token, repo)
+        end_session(request.refresh_token, session_repo)
     except InvalidSessionError as e:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(e)) from e

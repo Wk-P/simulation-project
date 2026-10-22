@@ -3,7 +3,7 @@ from string import ascii_letters, digits
 from src.models.user.user import UserModel
 from src.repositories.user.user import UserRepository, UsernameAlreadyExistsError
 from src.schemas.user.register import RegisterNormalUserRequest, RegisterNormalUserResponse, RegisterStaffUserRequest, RegisterStaffUserResponse, RegisterAdminUserRequest, RegisterAdminUserResponse
-from .password import hash_password
+from .password import hash_password, verify_password_style
 
 '''
 后端再次验证输入
@@ -36,17 +36,7 @@ def validate_register_request(request: RegisterNormalUserRequest | RegisterStaff
     if any(char not in ascii_letters + digits + '_' for char in username):
         return False
 
-    # 密码必须同时包含英文字母、数字和指定特殊字符。
-    special_chars = '*-+!@~.?'
-    if not 8 <= len(password) <= 16:
-        return False
-    if any(char not in ascii_letters + digits + special_chars for char in password):
-        return False
-    if not any(char in ascii_letters for char in password):
-        return False
-    if not any(char in digits for char in password):
-        return False
-    if not any(char in special_chars for char in password):
+    if not verify_password_style(password):
         return False
 
     return True

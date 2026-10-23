@@ -19,3 +19,7 @@ wheels/
 
 # vscode
 .vscode/
+
+# 本地开发
+logs/
+scripts/
